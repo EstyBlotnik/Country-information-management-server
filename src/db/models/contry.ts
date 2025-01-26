@@ -1,0 +1,13 @@
+import mongoose, { Schema, Document } from "mongoose";
+import { ICountry } from "../types/country";
+
+const countrySchema = new Schema<ICountry>({
+  name: { type: String, required: true, unique: true },
+  flag: { type: String, required: true },
+  population: { type: Number, required: true },
+  region: { type: String, required: true },
+});
+
+const Country = mongoose.model<ICountry>("Country", countrySchema);
+
+export default Country;
