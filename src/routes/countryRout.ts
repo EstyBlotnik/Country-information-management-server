@@ -7,15 +7,15 @@ const router = express.Router();
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   const { name, flag, population, region } = req.body;
   try {
-    if (!name || !name.common) {
+    if (!name) {
       res.status(400).json({ message: "Invalid name format" });
     } else {
-      const existingCountry = await Country.findOne({ name: name.common });
+      const existingCountry = await Country.findOne({ name: name });
       if (existingCountry) {
         res.status(401).json({ message: "Country already exists" });
       } else {
         const newCountry = new Country({
-          name: name.common,
+          name,
           flag,
           population,
           region,
@@ -26,9 +26,9 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
     }
   } catch (err) {
     if (err instanceof Error) {
-      res.status(400).json({ message: "err.message" });
+      res.status(402).json({ message: "err.message" });
     } else {
-      res.status(400).json({ message: "An unknown error occurred." });
+      res.status(403).json({ message: "An unknown error occurred." });
     }
   }
 });
@@ -49,6 +49,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 router.put("/:id", async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { name, flag, population, region } = req.body;
+  console.log(name, flag, population, region);
   if (!name || !flag || !population || !region) {
     res.status(400).json({ message: "Invalid data format" });
   } else {
@@ -58,9 +59,14 @@ router.put("/:id", async (req: Request, res: Response): Promise<void> => {
         res.status(404).json({ message: "Country not found" });
         return;
       }
+      console.log(countryById);
       const existingCountry = await Country.findOne({ name });
-      if (existingCountry) {
-        res.status(401).json({ message: "Country already exists" });
+      console.log(existingCountry);
+      if (
+        existingCountry &&
+        existingCountry._id.toString() !== countryById._id.toString()
+      ) {
+        res.status(409).json({ message: "Country name already exists" });
       } else {
         const updatedCountry = await Country.findByIdAndUpdate(
           id,
