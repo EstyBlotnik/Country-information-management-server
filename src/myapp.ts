@@ -1,7 +1,7 @@
 import express from "express";
 import fs from "fs";
 import { connectDB } from "./db/connectDB";
-import Country from "./db/models/contry";
+import Country from "./db/models/country";
 interface ICountry2 {
   name: {
     common: string;
