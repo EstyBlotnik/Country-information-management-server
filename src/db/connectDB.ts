@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 // יצירת פונקציה לחיבור לבסיס נתונים
 export async function connectDB() {
   const mongoURI =
-    process.env.MONGOURI || "mongodb://localhost:27017/mydatabase"; // החלף בכתובת המתאימה
+    process.env.MONGOURI || "mongodb://localhost:27017";
   try {
     // התחברות ל-MongoDB
     await mongoose.connect(mongoURI);

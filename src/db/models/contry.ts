@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 import { ICountry } from "../types/country";
 
 const countrySchema = new Schema<ICountry>({
@@ -6,6 +6,8 @@ const countrySchema = new Schema<ICountry>({
   flag: { type: String, required: true },
   population: { type: Number, required: true },
   region: { type: String, required: true },
+  cityes: [{ type: Types.ObjectId, ref: 'City' }],
+
 });
 
 const Country = mongoose.model<ICountry>("Country", countrySchema);
