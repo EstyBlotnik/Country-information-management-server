@@ -51,6 +51,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       password,
     } = req.body;
 
+     if (!firstName || !lastName || !email || !phoneNumber || !userName || !password) {
+      res.status(400).json({ message: "Missing required fields" });
+      return;
+    }
+
     const existingUser = await User.findOne(
       { email },
       { userName },
@@ -89,6 +94,62 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       maxAge: 21600000,
     });
     res.json({ message: "User registered successfully", token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const editUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const {
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      profilePicture,
+      userName,
+    } = req.body;
+    const existingUser = await User.findOne({
+      $or: [{ email }, { userName }, { phoneNumber }],
+    });
+
+    if (existingUser && existingUser._id.toString() !== id) {
+      res.status(400).json({
+        message:
+          "User with this email, username, or phone number already exists.",
+      });
+      return;
+    }
+    const user = await User.findById(id);
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.email = email || user.email;
+    user.phoneNumber = phoneNumber || user.phoneNumber;
+    user.profilePicture = profilePicture || user.profilePicture;
+    user.userName = userName || user.userName;
+
+    await user.save();
+    
+    res.json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
