@@ -7,7 +7,6 @@ const countrySchema = new Schema<ICountry>({
   population: { type: Number, required: true },
   region: { type: String, required: true },
   cityes: [{ type: Types.ObjectId, ref: 'City' }],
-
 });
 
 const Country = mongoose.model<ICountry>("Country", countrySchema);

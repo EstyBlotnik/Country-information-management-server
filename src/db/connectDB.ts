@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-// יצירת פונקציה לחיבור לבסיס נתונים
 export async function connectDB() {
   const mongoURI =
     process.env.MONGOURI || "mongodb://localhost:27017";

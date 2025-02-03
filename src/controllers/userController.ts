@@ -8,17 +8,17 @@ dotenv.config();
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const { userName, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ userName });
     if (!user) {
-      res.status(401).json({ message: "Invalid email or password" });
+      res.status(401).json({ message: "Invalid userName or password" });
       return;
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      res.status(401).json({ message: "Invalid email or password" });
+      res.status(401).json({ message: "Invalid userName or password" });
       return;
     }
 
@@ -32,7 +32,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       secure: process.env.NODE_ENV === "production",
       maxAge: 21600000,
     });
-    res.json({ token });
+    const { password: _, ...userWithoutPassword } = user.toObject();
+    res.json({
+      message: "User login successfully",
+      user: userWithoutPassword,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -51,7 +55,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       password,
     } = req.body;
 
-     if (!firstName || !lastName || !email || !phoneNumber || !userName || !password) {
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !phoneNumber ||
+      !userName ||
+      !password
+    ) {
       res.status(400).json({ message: "Missing required fields" });
       return;
     }
@@ -93,7 +104,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       secure: process.env.NODE_ENV === "production",
       maxAge: 21600000,
     });
-    res.json({ message: "User registered successfully", token });
+    const { password: _, ...userWithoutPassword } = newUser.toObject();
+    res.json({
+      message: "User registered successfully",
+      token,
+      newUser: userWithoutPassword,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -148,7 +164,7 @@ export const editUser = async (req: Request, res: Response): Promise<void> => {
     user.userName = userName || user.userName;
 
     await user.save();
-    
+
     res.json(user);
   } catch (error) {
     console.error(error);
