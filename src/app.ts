@@ -7,14 +7,22 @@ import adminroute from "./routes/adminRoute";
 import userRoute from "./routes/userRoute";
 import cookieParser from "cookie-parser";
 import adminMiddleware from "./middlewares/adminMiddlware";
+import path from 'path';
+import mongoSanitize from "express-mongo-sanitize";
 
 dotenv.config();
 
 const app = express();
+app.use(mongoSanitize());
 const PORT = process.env.PORT || 3000;
 app.use(cookieParser());
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use("/countries", countryRoute);
 app.use("/user", userRoute);
 app.use("/admin", adminMiddleware, adminroute);

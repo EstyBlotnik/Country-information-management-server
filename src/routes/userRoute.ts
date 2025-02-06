@@ -8,15 +8,16 @@ import {
 import dotenv from "dotenv";
 import passwordResetRoute from "./passwordRoute";
 import { checkUserOrAdminAccess } from "../middlewares/adminMiddlware";
+import upload from "../middlewares/upload"
 
 dotenv.config();
 
 const router = express.Router();
 
-router.post("/register", register);
+router.post("/register", upload.single("profilePicture"), register);
 router.post("/login", login);
 router.use("/password", passwordResetRoute);
 router.get("/:id", checkUserOrAdminAccess, getUser);
-router.put("/:id", checkUserOrAdminAccess, editUser);
+router.put("/:id", checkUserOrAdminAccess, upload.single("profilePicture"), editUser);
 
 export default router;

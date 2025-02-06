@@ -48,21 +48,18 @@ export const checkUserOrAdminAccess = (
 ) => {
   try {
     const token = req.cookies.token;
-    console.log(token);
     if (!token) {
       res.status(401).json({ message: "Access denied. No token provided." });
       return;
     } else {
       const {id}= req.params
-      console.log(token);
+      console.log("id:",req.params)
+
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
         id: string;
         role: string;
       };
-
       req.user = decoded;
-      console.log(decoded);
-
       if (req.user.role !== "Admin" && req.user.id !== id) {
         res.status(403).json({ message: "Access denied. Admins only." });
         return;

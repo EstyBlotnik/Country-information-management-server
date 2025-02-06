@@ -45,15 +45,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      phoneNumber,
-      profilePicture,
-      userName,
-      password,
-    } = req.body;
+    const { firstName, lastName, email, phoneNumber, userName, password } =
+      req.body;
 
     if (
       !firstName ||
@@ -67,16 +60,21 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const existingUser = await User.findOne(
-      { email },
-      { userName },
-      { phoneNumber }
-    );
+    const existingUser = await User.findOne({
+      $or: [{ email }, { userName }, { phoneNumber }],
+    });
+
     if (existingUser) {
       res.status(400).json({ message: "User already exists" });
       return;
     }
-
+    const allowedMimeTypes = ["image/jpeg", "image/png", "image/gif"];
+    if (req.file && !allowedMimeTypes.includes(req.file.mimetype)) {
+      res.status(400).json({ message: "Invalid image format" });
+      return;
+    }
+    const profilePicture = req.file ? `/uploads/${req.file.filename}` : "";
+    console.log(profilePicture);
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -85,7 +83,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       lastName,
       email,
       phoneNumber,
-      profilePicture: profilePicture || "",
+      profilePicture,
       role: "View",
       userName,
       password: hashedPassword,
@@ -120,7 +118,12 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const user = await User.findById(id);
-    res.json(user);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+    const { password: _, ...userWithoutPassword } = user.toObject();
+    res.json({ user: userWithoutPassword });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -130,14 +133,15 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
 export const editUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const {
-      firstName,
-      lastName,
-      email,
-      phoneNumber,
-      profilePicture,
-      userName,
-    } = req.body;
+    const { firstName, lastName, email, phoneNumber, userName } = req.body;
+    console.log(req.body);
+    console.log("req.file:", req.file);
+    console.log("req.files:", req.files);
+
+    if (!firstName || !lastName || !email || !phoneNumber || !userName) {
+      res.status(400).json({ message: "No updates provided" });
+      return;
+    }
     const existingUser = await User.findOne({
       $or: [{ email }, { userName }, { phoneNumber }],
     });
@@ -149,6 +153,7 @@ export const editUser = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
+
     const user = await User.findById(id);
 
     if (!user) {
@@ -160,8 +165,16 @@ export const editUser = async (req: Request, res: Response): Promise<void> => {
     user.lastName = lastName || user.lastName;
     user.email = email || user.email;
     user.phoneNumber = phoneNumber || user.phoneNumber;
-    user.profilePicture = profilePicture || user.profilePicture;
     user.userName = userName || user.userName;
+
+    const allowedMimeTypes = ["image/jpeg", "image/png", "image/gif"];
+    if (req.file && !allowedMimeTypes.includes(req.file.mimetype)) {
+      res.status(400).json({ message: "Invalid image format" });
+      return;
+    }
+    if (req.file) {
+      user.profilePicture = `/uploads/${req.file.filename}`;
+    }
 
     await user.save();
 

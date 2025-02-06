@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import User from "../db/models/user";
 import ResetToken from "../db/models/resetToken";
 import bcrypt from "bcryptjs";
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -50,7 +51,7 @@ export const requestPasswordReset = async (
       res.status(404).json({ message: "User not found" });
       return;
     }
-    const token = bcrypt.hashSync(Date.now().toString(), 10);
+    const token = crypto.randomBytes(32).toString("base64url");
     const expiresAt = new Date(Date.now() + 3600000);
     const resetToken = new ResetToken({
       userId: user._id,
@@ -58,8 +59,12 @@ export const requestPasswordReset = async (
       expiresAt,
     });
     await resetToken.save();
-    const resetUrl = `http://localhost:3000/reset-password/${token}`;
-    sendEmail(email, "RESET PASS", `Click here to reset: ${resetUrl}`);
+    const resetUrl = `http://localhost:5173/passwordreset/${token}`;
+    sendEmail(
+      email,
+      "RESET PASS",
+      `Click here to reset your password: ${resetUrl}`
+    );
     res.status(200).json({ message: "Reset password link sent to email" });
   } catch (error) {
     console.error("Error requesting password reset:", error);
@@ -80,7 +85,7 @@ export const resetPassword = async (
     }
     const resetToken = await ResetToken.findOne({ token });
     if (!resetToken || resetToken.expiresAt < new Date()) {
-      res.status(404).json({ message: "Token not found or expired" });
+      res.status(403).json({ message: "Token not found or expired" });
       return;
     }
     const user = await User.findById(resetToken.userId);
