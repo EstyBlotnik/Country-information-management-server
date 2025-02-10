@@ -5,10 +5,10 @@ const requestSchema = new Schema<IAuthorizationRequest>({
   requestDate: { type: Date, default: Date.now },
   responseDate: { type: Date },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  permission: { type: String, enum: ["Add", "Delete", "Update"] },
+  requestedRole: { type: String, enum: ["Add", "Delete", "Edit"] },
   status: { type: String, enum: ["Approved", "Denied", "Pending"] },
 });
 
-const Request = mongoose.model<IAuthorizationRequest>("Request", requestSchema);
+const AuthorizationRequest = mongoose.model<IAuthorizationRequest>("AuthorizationRequest", requestSchema);
 
-export default Request;
+export default AuthorizationRequest;

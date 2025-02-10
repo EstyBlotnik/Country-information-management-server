@@ -13,19 +13,19 @@ export const adminMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log("adminMiddleware")
   try {
     const token = req.cookies.token;
-    console.log(token);
+    console.log("admin token:",token);
     if (!token) {
       res.status(401).json({ message: "Access denied. No token provided." });
       return;
     } else {
-      console.log(token);
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
         id: string;
         role: string;
       };
-
+      console.log("decoded:",decoded);
       req.user = decoded;
       console.log(decoded);
 

@@ -4,6 +4,6 @@ export interface IAuthorizationRequest extends Document {
   requestDate: Date;
   responseDate: Date;
   userId: Types.ObjectId;
-  permission: "Add" | "Delete" | "Update";
+  requestedRole: "Add" | "Delete" | "Edit";
   status: "Approved" | "Denied" | "Pending";
 }

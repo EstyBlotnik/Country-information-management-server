@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import User from "../db/models/user";
+import AuthorizationRequest from "../db/models/authorizationRequest";
 
 dotenv.config();
 
@@ -181,6 +182,41 @@ export const editUser = async (req: Request, res: Response): Promise<void> => {
     res.json(user);
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const changeRoleRequest = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { newRole } = req.body;
+    console.log("id: " + id + ", new role: " + newRole);
+    const user = await User.findById(id);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+    if (user.role === newRole || user.openRequest) {
+      res.status(400).json({ message: "User already has this role" });
+      return;
+    }
+    const request = new AuthorizationRequest({
+      requestDate: new Date(),
+      userId: id,
+      requestedRole: newRole,
+      status: "Pending",
+    });
+
+    console.log("request: ", request);
+    await request.save();
+    user.openRequest = request._id;
+    await user.save();
+    res.json(request);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };

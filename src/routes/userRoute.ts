@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import {
+  changeRoleRequest,
   editUser,
   getUser,
   login,
@@ -19,5 +20,6 @@ router.post("/login", login);
 router.use("/password", passwordResetRoute);
 router.get("/:id", checkUserOrAdminAccess, getUser);
 router.put("/:id", checkUserOrAdminAccess, upload.single("profilePicture"), editUser);
+router.put("/changeRole/:id", changeRoleRequest);
 
 export default router;
