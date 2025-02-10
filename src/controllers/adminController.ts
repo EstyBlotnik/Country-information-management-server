@@ -60,12 +60,14 @@ export const changeRoleResponse = async (
   try {
     const { id } = req.params;
     const { approved } = req.body;
-    console.log(req.body);
+    console.log("approved: ", approved);
+    console.log("id: ", id);
     if (!id) {
       res.status(400).json({ message: "Missing reqest." });
       return;
     }
     const reqest = await AuthorizationRequest.findById(id);
+    console.log("reqest: ", reqest);
     if (!reqest) {
       res.status(404).json({ message: "Request not found." });
       return;
@@ -75,7 +77,8 @@ export const changeRoleResponse = async (
       res.status(404).json({ message: "User not found." });
       return;
     }
-    if (approved === true) {
+    if (approved === "true") {
+      console.log("approved=true");
       user.role = reqest.requestedRole;
       reqest.status = "Approved";
     } else {
@@ -84,7 +87,7 @@ export const changeRoleResponse = async (
     user.closedRequests.push(reqest._id);
     user.openRequest = undefined;
     await user.save();
-    reqest.responseDate=new Date();
+    reqest.responseDate = new Date();
     await reqest.save();
     res.status(200).json({ user, reqest });
   } catch (error) {
@@ -93,7 +96,7 @@ export const changeRoleResponse = async (
   }
 };
 
-export const allReqs = async (req:Request, res:Response): Promise<void> => {
+export const allReqs = async (req: Request, res: Response): Promise<void> => {
   try {
     const reqests = await AuthorizationRequest.find();
     console.log(reqests);
@@ -102,4 +105,4 @@ export const allReqs = async (req:Request, res:Response): Promise<void> => {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
-}
+};
